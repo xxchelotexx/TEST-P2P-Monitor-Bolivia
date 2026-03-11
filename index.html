@@ -22,11 +22,10 @@
         .table-scroll-container { width: 100%; overflow-x: auto; background: #fff; border-radius: 8px; border: 1px solid #ddd; -webkit-overflow-scrolling: touch; }
         table { width: 100%; border-collapse: collapse; }
         
-        /* Tamaño de letra unificado para todas las tablas */
         th, td { padding: 10px 12px; border-bottom: 1px solid #eee; font-size: 0.85rem; white-space: nowrap; text-align: right; }
         th { background: #f8f9fa; color: #666; font-weight: 600; }
         
-        .col-precio { text-align: left; font-weight: bold; width: 1%; }
+        .col-precio { text-align: left; font-weight: bold; width: 1%; min-width: 85px; }
         .col-dist-header, .col-dist-data { width: auto !important; text-align: left; min-width: 150px; }
         .dist-bar { font-size: 8px; letter-spacing: -1px; display: block; line-height: 1; }
         
@@ -35,9 +34,15 @@
         #bybitOrdersPanel { display: none; margin-top: 30px; border-top: 3px solid #ff9800; padding-top: 10px; }
         .label-ejecucion { font-size: 1rem; font-weight: bold; display: block; margin: 15px 0 8px 0; }
 
-        /* Ajuste específico para la nueva tabla de órdenes: Letra un poco más grande */
-        #ordersContent table th, #ordersContent table td { font-size: 1rem; }
-        .col-usuario { text-align: center !important; }
+        /* Mejora visual para los nombres de usuario */
+        .col-usuario { 
+            text-align: left !important; 
+            min-width: 140px; 
+            white-space: normal; 
+            word-break: break-all;
+            color: #2c3e50;
+            font-weight: 600;
+        }
 
         .loading { text-align: center; padding: 50px; color: #666; }
         .error { color: red; padding: 20px; background: #ffe6e6; border-radius: 8px; font-size: 0.9rem; }
@@ -71,11 +76,11 @@
 
     <div id="bybitExtraPanel">
         <div class="section-header">
-            <span>📊 RESUMEN DE EJECUCIÓN</span>
+            <span>📊 Órdenes Ejecutadas</span>
             <select id="limitResumen" style="font-size: 0.9rem;" onchange="refreshExtraPanel()">
-                <option value="5">Ver 5</option>
-                <option value="10" selected>Ver 10</option>
-                <option value="15">Ver 15</option>
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="15">15</option>
                 <option value="999">Todo</option>
             </select>
         </div>
@@ -84,7 +89,7 @@
 
     <div id="bybitOrdersPanel">
         <div class="section-header">
-            <span>🛒 ÚLTIMAS ÓRDENES (BYBIT)</span>
+            <span>🛒 Órdenes Activas</span>
         </div>
         <div id="ordersContent"></div>
     </div>
@@ -100,9 +105,17 @@
     let currentLimits = { buy: 5, sell: 5 };
     let cachedData = null;
     
-    const fmt = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const fmtVol = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
     const fmtVolDec = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 });
+
+    function formatPrecio(valor) {
+        const exchange = document.getElementById('exchangeSelector').value;
+        const decimales = exchange === 'bybit' ? 3 : 2;
+        return new Intl.NumberFormat('en-US', { 
+            minimumFractionDigits: decimales, 
+            maximumFractionDigits: decimales 
+        }).format(valor);
+    }
 
     async function loadData() {
         const exchange = document.getElementById('exchangeSelector').value;
@@ -151,8 +164,8 @@
         let html = "";
 
         const tipos = [
-            { key: 'Compra', titulo: '🟢 COMPRAS RECIENTES', color: '#2ebd85' },
-            { key: 'Venta', titulo: '🔴 VENTAS RECIENTES', color: '#f6465d' }
+            { key: 'Compra', titulo: '🟢 COMPRAS ACTIVAS', color: '#2ebd85' },
+            { key: 'Venta', titulo: '🔴 VENTAS ACTIVAS', color: '#f6465d' }
         ];
 
         tipos.forEach(tipo => {
@@ -171,12 +184,17 @@
                             </tr>
                         </thead>
                         <tbody>
-                            ${lista.map(o => `
-                                <tr>
-                                    <td class="col-precio" style="color:${tipo.color}">${fmt.format(o.precio)}</td>
-                                    <td class="col-usuario" style="white-space: normal;">${o.usuario}</td>
-                                    <td style="font-weight:bold">${fmtVolDec.format(o.monto)}</td>
-                                </tr>`).join('')}
+                            ${lista.map(o => {
+                                // Se muestra el nombre de usuario completo
+                                const usuarioLimpio = o.usuario && o.usuario.length > 0 ? o.usuario : "Anónimo";
+
+                                return `
+                                    <tr>
+                                        <td class="col-precio" style="color:${tipo.color}">${formatPrecio(o.precio)}</td>
+                                        <td class="col-usuario">${usuarioLimpio}</td>
+                                        <td style="font-weight:bold">${fmtVolDec.format(o.monto)}</td>
+                                    </tr>`;
+                            }).join('')}
                         </tbody>
                     </table>
                 </div>`;
@@ -208,7 +226,9 @@
                 .sort((a, b) => type === "BUY" ? a.precio - b.precio : b.precio - a.precio);
 
             const displayEntries = entries.slice(0, limit === 999 ? entries.length : limit);
+            
             const volTotal = displayEntries.reduce((acc, curr) => acc + curr.suma, 0);
+            const volInmediatoTotal = displayEntries.reduce((acc, curr) => acc + (curr.inmediato || 0), 0);
 
             html += `
                 <div class="section-header">
@@ -216,12 +236,15 @@
                     <select style="font-size: 0.8rem;" onchange="updateLimit('${prefix}', this.value)">
                         <option value="5" ${limit == 5 ? 'selected' : ''}>5</option>
                         <option value="10" ${limit == 10 ? 'selected' : ''}>10</option>
+                        <option value="15" ${limit == 15 ? 'selected' : ''}>15</option>
+                        <option value="20" ${limit == 20 ? 'selected' : ''}>20</option>
                         <option value="999" ${limit == 999 ? 'selected' : ''}>Todas</option>
                     </select>
                 </div>
                 <div class="summary-card">
                     <div class="stats">
                         <span>Volumen: <strong>${fmtVol.format(volTotal)} USDT</strong></span>
+                        <span>Vol. Inmediato: <strong>${fmtVol.format(volInmediatoTotal)} USDT</strong></span>
                         <span>Ads: <strong>${displayEntries.reduce((a,c)=>a+c.conteo,0)}</strong></span>
                     </div>
                     <div class="controls">
@@ -248,7 +271,7 @@
                                 const modulo = volTotal > 0 ? Math.floor((e.suma / volTotal) * 40) : 0;
                                 return `
                                 <tr>
-                                    <td class="col-precio" style="color: ${color}">${fmt.format(e.precio)}</td>
+                                    <td class="col-precio" style="color: ${color}">${formatPrecio(e.precio)}</td>
                                     <td>${e.conteo}</td>
                                     <td>${fmtVol.format(e.suma)}</td>
                                     <td class="${prefix}-inm">${fmtVol.format(e.inmediato || 0)}</td>
@@ -298,7 +321,7 @@
                         <tbody>
                             ${display.map(e => `
                                 <tr>
-                                    <td class="col-precio" style="color:${color}">${fmt.format(e.precio)}</td>
+                                    <td class="col-precio" style="color:${color}">${formatPrecio(e.precio)}</td>
                                     <td>${e.conteo}</td>
                                     <td style="font-weight:bold">${fmtVolDec.format(e.volumen_ejecutado || 0)}</td>
                                     <td style="color:#666">${fmtVolDec.format(e.volumen_en_proceso || 0)}</td>
