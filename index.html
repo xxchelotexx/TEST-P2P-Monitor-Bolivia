@@ -3,16 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Monitor P2P Bolivia - Railway API</title>
+    <title>Monitor P2P Bolivia</title>
     <style>
-        /* Estilos Base Unificados */
-        body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 15px; color: #333; background-color: #f4f7f6; padding-bottom: 50px; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 15px; color: #333; background-color: #f4f7f6; padding-bottom: 50px; transition: background-color 0.3s, color 0.3s; }
         .container { max-width: 1200px; margin: 0 auto; }
-        h1 { font-size: 1.5rem; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
-        select { padding: 5px; font-size: 1.1rem; border-radius: 8px; border: 1px solid #ccc; background: white; cursor: pointer; }
-        .author { font-size: 0.9rem; margin: 0; color: #666; }
-        .update-time { font-size: 0.85rem; margin-bottom: 15px; color: #444; }
         
+        /* Estructura del Header */
+        h1 { font-size: 1.5rem; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        select { padding: 5px; font-size: 1.1rem; border-radius: 8px; border: 1px solid #ccc; background: white; cursor: pointer; }
+        
+        .header-flex { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 20px;
+        }
+
+        .info-left { font-size: 0.95rem; line-height: 1.6; }
+        .author { font-weight: bold; color: #333; }
+        .update-time { color: #666; font-size: 0.9rem; }
+
+        /* Tasas FIAT */
+        .fiat-right { 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            font-size: 1.1rem; 
+            line-height: 1.6;
+            color: #000;
+            background: #fff;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            margin-top: 35px; 
+            margin-bottom: 15px;
+            width: 100%;
+            box-sizing: border-box;
+            white-space: normal;
+        }
+        .fiat-label { 
+            font-weight: bold; 
+            display: inline-block; 
+            width: 140px; 
+        }
+
+        /* Estilos Tablas y Secciones */
         .section-header { display: flex; justify-content: space-between; align-items: center; margin: 25px 0 10px 0; font-size: 1.1rem; font-weight: bold; }
         .summary-card { background: #fff; padding: 12px; border-radius: 10px; border: 1px solid #e0e0e0; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .stats { display: flex; gap: 15px; font-size: 0.85rem; margin-bottom: 10px; flex-wrap: wrap; }
@@ -20,232 +53,235 @@
         .controls label { background: #fff; border: 1px solid #ddd; padding: 2px 8px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
 
         .table-scroll-container { width: 100%; overflow-x: auto; background: #fff; border-radius: 8px; border: 1px solid #ddd; -webkit-overflow-scrolling: touch; }
-        table { width: 100%; border-collapse: collapse; }
         
-        th, td { padding: 10px 12px; border-bottom: 1px solid #eee; font-size: 0.85rem; white-space: nowrap; text-align: right; }
+        /* Ajustes para que el fondo abarque todo el ancho disponible sin huecos */
+        table { width: 100%; border-collapse: collapse; table-layout: auto; }
+        th, td { padding: 10px 12px; border-bottom: 1px solid #eee; font-size: 0.85rem; white-space: nowrap; text-align: right; background: transparent; }
         th { background: #f8f9fa; color: #666; font-weight: 600; }
         
         .col-precio { text-align: left; font-weight: bold; width: 1%; min-width: 85px; }
-        .col-dist-header, .col-dist-data { width: auto !important; text-align: left; min-width: 150px; }
-        .dist-bar { font-size: 8px; letter-spacing: -1px; display: block; line-height: 1; }
         
-        /* Panel Inferior */
         #bybitExtraPanel { display: none; margin-top: 30px; border-top: 3px solid #2ebd85; padding-top: 10px; }
-        #bybitOrdersPanel { display: none; margin-top: 30px; border-top: 3px solid #ff9800; padding-top: 10px; }
         .label-ejecucion { font-size: 1rem; font-weight: bold; display: block; margin: 15px 0 8px 0; }
 
-        /* Mejora visual para los nombres de usuario */
-        .col-usuario { 
-            text-align: left !important; 
-            min-width: 140px; 
-            white-space: normal; 
-            word-break: break-all;
-            color: #2c3e50;
-            font-weight: 600;
-        }
-
-        .loading { text-align: center; padding: 50px; color: #666; }
-        .error { color: red; padding: 20px; background: #ffe6e6; border-radius: 8px; font-size: 0.9rem; }
+        .loading { text-align: center; padding: 30px; color: #666; }
+        .error { color: red; padding: 10px; font-size: 0.8rem; }
         footer { margin-top: 40px; padding: 20px; text-align: center; border-top: 1px solid #ddd; font-size: 1rem; background: #fff; border-radius: 10px; }
-        .whatsapp-link { color: #25D366; text-decoration: none; font-weight: bold; display: inline-flex; align-items: center; gap: 5px; }
 
-        @media (max-width: 600px) {
-            .stats span { width: 100%; border-bottom: 1px solid #eee; padding-bottom: 4px; }
+        /* MODO OSCURO */
+        body.dark-mode { background-color: #121212; color: #e0e0e0; }
+        .dark-mode .summary-card, .dark-mode .table-scroll-container, .dark-mode footer, .dark-mode select, .dark-mode .fiat-right { background-color: #1e1e1e; border-color: #333; color: #e0e0e0; }
+        .dark-mode th { background-color: #252525; color: #aaa; }
+        .dark-mode td { border-bottom-color: #333; }
+        .dark-mode .author, .dark-mode .fiat-label { color: #fff; }
+        .dark-mode .update-time { color: #999; }
+        .dark-mode .controls label { background-color: #252525; border-color: #444; color: #ccc; }
+        .dark-mode .fiat-right { color: #00ff41; }
+
+        #darkModeBtn { position: absolute; top: 15px; right: 15px; padding: 5px 10px; font-size: 1rem; border-radius: 8px; border: 1px solid #ccc; cursor: pointer; background: #fff; z-index: 1000; }
+        .dark-mode #darkModeBtn { background: #333; color: #fff; border-color: #555; }
+
+        @media (max-width: 768px) {
+            .header-flex { flex-direction: column; gap: 10px; }
+            .fiat-right { font-size: 0.75rem; white-space: pre; width: 100%; box-sizing: border-box; }
+            h1 { margin-top: 40px; } 
         }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <button id="darkModeBtn" onclick="toggleDarkMode()">🌙</button>
+
     <header>
+        <div id="fiatRates" class="fiat-right">Cargando tasas bancarias...</div>
+
         <h1>📈 
             <select id="exchangeSelector" onchange="loadData()">
                 <option value="binance">BINANCE</option>
                 <option value="bybit">BYBIT</option>
                 <option value="bitget">BITGET</option>
+                <option value="mexc">MEXC</option>
+                <option value="bingx">BINGX</option>
             </select> 
             (USDT/BOB)
         </h1>
-        <p class="author">By: <strong>Chelotex</strong></p>
-        <div id="updateTime" class="update-time"></div>
+        
+        <div class="header-flex">
+            <div class="info-left">
+                <div class="author">By: <strong>Chelotex</strong></div>
+                <div id="updateTime" class="update-time">Actualización: --:--:--</div>
+            </div>
+        </div>
     </header>
 
     <div id="mainContent">
-        <div class="loading">Cargando datos desde Railway...</div>
+        <div class="loading">Cargando datos...</div>
     </div>
 
     <div id="bybitExtraPanel">
         <div class="section-header">
             <span>📊 Órdenes Ejecutadas</span>
-            <select id="limitResumen" style="font-size: 0.9rem;" onchange="refreshExtraPanel()">
+            <select id="limitResumen" style="font-size: 0.8rem;" onchange="refreshExtraPanel()">
                 <option value="5">5</option>
                 <option value="10" selected>10</option>
-                <option value="15">15</option>
                 <option value="999">Todo</option>
             </select>
         </div>
         <div id="compactContent"></div>
     </div>
 
-    <div id="bybitOrdersPanel">
-        <div class="section-header">
-            <span>🛒 Órdenes Activas</span>
-        </div>
+    <div id="bybitOrdersPanel" style="display:none; margin-top:30px; border-top:3px solid #ff9800; padding-top:10px;">
+        <div class="section-header"><span>🛒 Órdenes Activas</span></div>
         <div id="ordersContent"></div>
     </div>
 
     <footer>
-        Contacto: <a href="https://wa.me/59176543021" class="whatsapp-link" target="_blank">76543021</a>
+        Contacto: <a href="https://wa.me/59176543021" style="color:#25D366; text-decoration:none; font-weight:bold;">76543021</a>
     </footer>
 </div>
 
 <script>
     const API_BASE_URL = "https://apicollector-production.up.railway.app/p2p";
     const API_ORDERS_URL = "https://apicollector-production.up.railway.app/bybit/ordenes";
+    const API_FIAT_URL = "https://apicollector-production.up.railway.app/fiat/ultimo";
+    
     let currentLimits = { buy: 5, sell: 5 };
     let cachedData = null;
-    
     const fmtVol = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
     const fmtVolDec = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 });
 
+    function toggleDarkMode() {
+        const isDark = document.body.classList.toggle('dark-mode');
+        document.getElementById('darkModeBtn').innerText = isDark ? '☀️' : '🌙';
+        localStorage.setItem('darkMode', isDark);
+        
+        if (cachedData) {
+            renderDashboard(cachedData);
+            if (document.getElementById('exchangeSelector').value === 'bybit') {
+                renderExtraPanel(cachedData);
+            }
+        }
+    }
+
+    function initDarkMode() {
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+            document.getElementById('darkModeBtn').innerText = '☀️';
+        }
+    }
+
     function formatPrecio(valor) {
         const exchange = document.getElementById('exchangeSelector').value;
-        const decimales = exchange === 'bybit' ? 3 : 2;
-        return new Intl.NumberFormat('en-US', { 
-            minimumFractionDigits: decimales, 
-            maximumFractionDigits: decimales 
-        }).format(valor);
+        const decimales = exchange === 'bybit'||exchange==='bingx' ? 3 : 2;
+        return new Intl.NumberFormat('en-US', { minimumFractionDigits: decimales, maximumFractionDigits: decimales }).format(valor);
     }
 
     async function loadData() {
         const exchange = document.getElementById('exchangeSelector').value;
-        const extraPanel = document.getElementById('bybitExtraPanel');
-        const ordersPanel = document.getElementById('bybitOrdersPanel');
-        
+        loadFiatData();
         try {
             const response = await fetch(`${API_BASE_URL}/${exchange}`);
-            if (!response.ok) throw new Error("Error Railway");
+            if (!response.ok) throw new Error("API P2P Error");
             const data = await response.json();
             cachedData = data;
-            
             renderDashboard(data);
             
             if (exchange === 'bybit') {
-                extraPanel.style.display = 'block';
+                document.getElementById('bybitExtraPanel').style.display = 'block';
+                document.getElementById('bybitOrdersPanel').style.display = 'block';
                 renderExtraPanel(data);
-                await loadOrdersData();
+                loadOrdersData();
             } else {
-                extraPanel.style.display = 'none';
-                ordersPanel.style.display = 'none';
+                document.getElementById('bybitExtraPanel').style.display = 'none';
+                document.getElementById('bybitOrdersPanel').style.display = 'none';
             }
-            
         } catch (err) {
-            document.getElementById('mainContent').innerHTML = `<div class="error">❌ Error: ${err.message}</div>`;
+            document.getElementById('mainContent').innerHTML = `<div class="error">Error: ${err.message}</div>`;
+        }
+    }
+
+    async function loadFiatData() {
+        const fiatContainer = document.getElementById('fiatRates');
+        try {
+            const response = await fetch(API_FIAT_URL);
+            const data = await response.json();
+            const f = data.fuentes;
+
+            fiatContainer.innerHTML = 
+                `<div><span class="fiat-label">BCB Oficial</span> Venta: <strong>${f.BCB.venta.toFixed(2)}</strong> | Compra: <strong>${f.BCB.compra.toFixed(2)}</strong></div>` +
+                `<div><span class="fiat-label">BCP USD</span> Venta: <strong>${f.BCP_USD.venta.toFixed(2)}</strong> | Compra: <strong>${f.BCP_USD.compra.toFixed(2)}</strong></div>` +
+                `<div><span class="fiat-label">FIE USD</span> Venta: <strong>${f.FIE_USD.venta.toFixed(2)}</strong> | Compra: <strong>${f.FIE_USD.compra.toFixed(2)}</strong></div>` +
+                `<div><span class="fiat-label">BSOL USD</span> Venta: <strong>${f.BSOL_USD.venta.toFixed(2)}</strong> | Compra: <strong>${f.BSOL_USD.compra.toFixed(2)}</strong></div>` +
+                `<div><span class="fiat-label">BNB USD</span> Venta: <strong>${f.BNB_USD.venta.toFixed(2)}</strong> | Compra: <strong>${f.BNB_USD.compra.toFixed(2)}</strong></div>` +
+                `<div><span class="fiat-label">BUN USD</span> Venta: <strong>${f.BUN_USD.venta.toFixed(2)}</strong> | Compra: <strong>${f.BUN_USD.compra.toFixed(2)}</strong></div>` +
+                `<div><span class="fiat-label">BEC USD</span> Venta: <strong>${f.BEC_USD.venta.toFixed(2)}</strong> | Compra: <strong>${f.BEC_USD.compra.toFixed(2)}</strong></div>` +
+                `<div><span class="fiat-label">BMSC USD</span> Venta: <strong>${f.BMSC_USD.venta.toFixed(2)}</strong> | Compra: <strong>${f.BMSC_USD.compra.toFixed(2)}</strong></div>` +
+                `<div><span class="fiat-label">BCP USDT</span> Venta: <strong>${f.BCP_USDT.venta.toFixed(2)}</strong> | Compra: <strong>${f.BCP_USDT.compra.toFixed(2)}</strong></div>` +
+                `<div><span class="fiat-label">BISA USDT</span> Venta: <strong>${f.BISA.venta.toFixed(2)}</strong> | Compra: <strong>${f.BISA.compra.toFixed(2)}</strong></div>`;
+        } catch (err) {
+            fiatContainer.innerHTML = `<span class="error">Error Tasas FIAT</span>`;
         }
     }
 
     async function loadOrdersData() {
-        const ordersPanel = document.getElementById('bybitOrdersPanel');
         try {
             const response = await fetch(API_ORDERS_URL);
-            if (!response.ok) throw new Error("Error API Órdenes");
             const data = await response.json();
-            
             renderOrdersTable(data.ordenes);
-            ordersPanel.style.display = 'block';
-        } catch (err) {
-            console.error("Error cargando órdenes:", err);
-            ordersPanel.style.display = 'none';
-        }
+        } catch (err) { console.error(err); }
     }
 
     function renderOrdersTable(ordenes) {
         const container = document.getElementById('ordersContent');
         let html = "";
-
-        const tipos = [
-            { key: 'Compra', titulo: '🟢 COMPRAS ACTIVAS', color: '#2ebd85' },
-            { key: 'Venta', titulo: '🔴 VENTAS ACTIVAS', color: '#f6465d' }
-        ];
-
+        const tipos = [{ k: 'Compra', t: '🟢 COMPRAS ACTIVAS', c: '#2ebd85' }, { k: 'Venta', t: '🔴 VENTAS ACTIVAS', c: '#f6465d' }];
         tipos.forEach(tipo => {
-            const lista = ordenes[tipo.key] || [];
+            const lista = ordenes[tipo.k] || [];
             if (lista.length === 0) return;
-
-            html += `
-                <span class="label-ejecucion" style="color:${tipo.color}">${tipo.titulo}</span>
-                <div class="table-scroll-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th class="col-precio">Precio</th>
-                                <th class="col-usuario">Usuario</th>
-                                <th>Monto</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${lista.map(o => {
-                                // Se muestra el nombre de usuario completo
-                                const usuarioLimpio = o.usuario && o.usuario.length > 0 ? o.usuario : "Anónimo";
-
-                                return `
-                                    <tr>
-                                        <td class="col-precio" style="color:${tipo.color}">${formatPrecio(o.precio)}</td>
-                                        <td class="col-usuario">${usuarioLimpio}</td>
-                                        <td style="font-weight:bold">${fmtVolDec.format(o.monto)}</td>
-                                    </tr>`;
-                            }).join('')}
-                        </tbody>
-                    </table>
-                </div>`;
+            html += `<span class="label-ejecucion" style="color:${tipo.c}">${tipo.t}</span>
+                <div class="table-scroll-container"><table><thead><tr><th>Precio</th><th>Usuario</th><th>Monto</th></tr></thead><tbody>
+                ${lista.map(o => `<tr><td style="color:${tipo.c}; font-weight:bold">${formatPrecio(o.precio)}</td><td style="text-align:center">${o.usuario || "Sin nombre"}</td><td>${fmtVolDec.format(o.monto)}</td></tr>`).join('')}
+                </tbody></table></div>`;
         });
-
-        container.innerHTML = html || "<p style='padding:20px; text-align:center; color:#999;'>Sin órdenes recientes.</p>";
-    }
-
-    function refreshExtraPanel() {
-        if (cachedData) renderExtraPanel(cachedData);
+        container.innerHTML = html || "<p>Sin órdenes.</p>";
     }
 
     function renderDashboard(data) {
-        const container = document.getElementById('mainContent');
-        const updateEl = document.getElementById('updateTime');
         const date = new Date(data.timestamp * 1000);
-        updateEl.innerHTML = `Actualización: <strong>${date.toLocaleTimeString('es-BO', {hour12:false})}</strong>`;
-
+        document.getElementById('updateTime').innerHTML = `Actualización: ${date.toLocaleTimeString('es-BO', {hour12:false})}`;
         let html = "";
+        const isDark = document.body.classList.contains('dark-mode');
+
         data.resultados.forEach(res => {
             const type = res.trade_type;
             const prefix = type.toLowerCase();
             const color = type === "BUY" ? "#2ebd85" : "#f6465d";
-            const titulo = type === "BUY" ? "🟢 Ofertas de Compra" : "🔴 Ofertas de Venta";
             const limit = currentLimits[prefix];
-
-            let entries = Object.entries(res.datos_agrupados)
-                .map(([p, v]) => ({ precio: parseFloat(p), ...v }))
-                .sort((a, b) => type === "BUY" ? a.precio - b.precio : b.precio - a.precio);
-
-            const displayEntries = entries.slice(0, limit === 999 ? entries.length : limit);
             
-            const volTotal = displayEntries.reduce((acc, curr) => acc + curr.suma, 0);
-            const volInmediatoTotal = displayEntries.reduce((acc, curr) => acc + (curr.inmediato || 0), 0);
+            let entries = Object.entries(res.datos_agrupados).map(([p, v]) => ({ precio: parseFloat(p), ...v })).sort((a, b) => type === "BUY" ? a.precio - b.precio : b.precio - a.precio);
+            const display = entries.slice(0, limit === 999 ? entries.length : limit);
+            
+            const volT = display.reduce((acc, curr) => acc + curr.suma, 0);
+            const volInmT = display.reduce((acc, curr) => acc + (curr.inmediato || 0), 0);
+            const adsT = display.reduce((acc, curr) => acc + (curr.conteo || 0), 0);
 
-            html += `
-                <div class="section-header">
-                    <span>${titulo}</span>
-                    <select style="font-size: 0.8rem;" onchange="updateLimit('${prefix}', this.value)">
-                        <option value="5" ${limit == 5 ? 'selected' : ''}>5</option>
-                        <option value="10" ${limit == 10 ? 'selected' : ''}>10</option>
-                        <option value="15" ${limit == 15 ? 'selected' : ''}>15</option>
-                        <option value="20" ${limit == 20 ? 'selected' : ''}>20</option>
-                        <option value="999" ${limit == 999 ? 'selected' : ''}>Todas</option>
-                    </select>
-                </div>
+            // Obtener el valor máximo para escalar la barra al 100% del campo
+            const maxVol = Math.max(...display.map(e => e.suma), 1);
+
+            // Tono del sombreado de profundidad
+            const bgRgb = type === "BUY" 
+                ? (isDark ? "46, 189, 133, 0.35" : "46, 189, 133, 0.2") 
+                : (isDark ? "246, 70, 93, 0.35" : "246, 70, 93, 0.2");
+
+            html += `<div class="section-header"><span>${type === "BUY" ? "🟢 Ofertas de Compra" : "🔴 Ofertas de Venta"}</span>
+                <select style="font-size:0.8rem;" onchange="updateLimit('${prefix}', this.value)">
+                <option value="5" ${limit==5?'selected':''}>5</option><option value="10" ${limit==10?'selected':''}>10</option><option value="15" ${limit==15?'selected':''}>15</option><option value="20" ${limit==20?'selected':''}>20</option><option value="999" ${limit==999?'selected':''}>Todas</option></select></div>
                 <div class="summary-card">
                     <div class="stats">
-                        <span>Volumen: <strong>${fmtVol.format(volTotal)} USDT</strong></span>
-                        <span>Vol. Inmediato: <strong>${fmtVol.format(volInmediatoTotal)} USDT</strong></span>
-                        <span>Ads: <strong>${displayEntries.reduce((a,c)=>a+c.conteo,0)}</strong></span>
+                        <span>Volumen: <strong>${fmtVol.format(volT)}</strong></span>
+                        <span>Vol. Inm: <strong>${fmtVol.format(volInmT)}</strong></span>
+                        <span>Ads: <strong>${adsT}</strong></span>
                     </div>
                     <div class="controls">
                         <label><input type="checkbox" checked onchange="toggleCol('${prefix}-inm', this.checked)"> ⚡ Inm.</label>
@@ -253,96 +289,46 @@
                         <label><input type="checkbox" checked onchange="toggleCol('${prefix}-max', this.checked)"> 📈 Max</label>
                     </div>
                 </div>
-                <div class="table-scroll-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th class="col-precio">Precio</th>
-                                <th>Ads</th>
-                                <th>Volumen</th>
-                                <th class="${prefix}-inm">⚡ Inmediato</th>
-                                <th class="${prefix}-min">📉 Min</th>
-                                <th class="${prefix}-max">📈 Max</th>
-                                <th class="col-dist-header">Distribución</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${displayEntries.map(e => {
-                                const modulo = volTotal > 0 ? Math.floor((e.suma / volTotal) * 40) : 0;
-                                return `
-                                <tr>
-                                    <td class="col-precio" style="color: ${color}">${formatPrecio(e.precio)}</td>
-                                    <td>${e.conteo}</td>
-                                    <td>${fmtVol.format(e.suma)}</td>
-                                    <td class="${prefix}-inm">${fmtVol.format(e.inmediato || 0)}</td>
-                                    <td class="${prefix}-min">${fmtVol.format(e.min || 0)}</td>
-                                    <td class="${prefix}-max">${fmtVol.format(e.max || 0)}</td>
-                                    <td class="col-dist-data"><span class="dist-bar" style="color: ${color}">${'⬛'.repeat(modulo)}</span></td>
-                                </tr>`;
-                            }).join('')}
-                        </tbody>
-                    </table>
-                </div>`;
+                <div class="table-scroll-container"><table><thead><tr>
+                <th class="col-precio">Precio</th><th>Ads</th><th>Volumen</th>
+                <th class="${prefix}-inm">⚡ Inm.</th><th class="${prefix}-min">📉 Min</th><th class="${prefix}-max">📈 Max</th></tr></thead><tbody>
+                ${display.map(e => {
+                    const pct = ((e.suma / maxVol) * 100).toFixed(2);
+                    return `<tr style="background: linear-gradient(to right, rgba(${bgRgb}) ${pct}%, transparent ${pct}%);">
+                        <td class="col-precio" style="color:${color}">${formatPrecio(e.precio)}</td>
+                        <td>${e.conteo}</td>
+                        <td>${fmtVol.format(e.suma)}</td>
+                        <td class="${prefix}-inm">${fmtVol.format(e.inmediato || 0)}</td>
+                        <td class="${prefix}-min">${fmtVol.format(e.min || 0)}</td>
+                        <td class="${prefix}-max">${fmtVol.format(e.max || 0)}</td>
+                    </tr>`;
+                }).join('')}
+                </tbody></table></div>`;
         });
-        container.innerHTML = html;
+        document.getElementById('mainContent').innerHTML = html;
         applySavedColumnVisibility();
     }
 
     function renderExtraPanel(data) {
-        const container = document.getElementById('compactContent');
-        const limitResumen = parseInt(document.getElementById('limitResumen').value);
+        const limit = parseInt(document.getElementById('limitResumen').value);
         let html = "";
-
         data.resultados.forEach(res => {
-            const type = res.trade_type;
-            const color = type === "BUY" ? "#2ebd85" : "#f6465d";
-            
-            let entries = Object.entries(res.datos_agrupados)
-                .map(([p, info]) => ({ precio: parseFloat(p), ...info }))
-                .filter(e => (e.volumen_ejecutado > 0 || e.volumen_en_proceso > 0));
-
+            const color = res.trade_type === "BUY" ? "#2ebd85" : "#f6465d";
+            let entries = Object.entries(res.datos_agrupados).map(([p, info]) => ({ precio: parseFloat(p), ...info })).filter(e => e.volumen_ejecutado > 0);
             if (entries.length === 0) return;
-
-            entries.sort((a, b) => type === "BUY" ? a.precio - b.precio : b.precio - a.precio);
-            const display = entries.slice(0, limitResumen);
-
-            html += `
-                <span class="label-ejecucion" style="color:${color}">${type === "BUY" ? "🟢 EJECUCIÓN COMPRA" : "🔴 EJECUCIÓN VENTA"}</span>
-                <div class="table-scroll-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th class="col-precio">Precio</th>
-                                <th>Ads</th>
-                                <th>Ejecutado</th>
-                                <th>En Proceso</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${display.map(e => `
-                                <tr>
-                                    <td class="col-precio" style="color:${color}">${formatPrecio(e.precio)}</td>
-                                    <td>${e.conteo}</td>
-                                    <td style="font-weight:bold">${fmtVolDec.format(e.volumen_ejecutado || 0)}</td>
-                                    <td style="color:#666">${fmtVolDec.format(e.volumen_en_proceso || 0)}</td>
-                                </tr>`).join('')}
-                        </tbody>
-                    </table>
-                </div>`;
+            entries.sort((a, b) => res.trade_type === "BUY" ? a.precio - b.precio : b.precio - a.precio);
+            html += `<span class="label-ejecucion" style="color:${color}">${res.trade_type === "BUY" ? "🟢 EJECUCIÓN COMPRA" : "🔴 EJECUCIÓN VENTA"}</span>
+                <div class="table-scroll-container"><table><thead><tr><th class="col-precio">Precio</th><th>Ejecutado</th><th>Proceso</th></tr></thead><tbody>
+                ${entries.slice(0, limit).map(e => `<tr><td class="col-precio" style="color:${color}">${formatPrecio(e.precio)}</td><td>${fmtVolDec.format(e.volumen_ejecutado)}</td><td>${fmtVolDec.format(e.volumen_en_proceso || 0)}</td></tr>`).join('')}
+                </tbody></table></div>`;
         });
-        container.innerHTML = html || "<p style='padding:20px; text-align:center; color:#999;'>Sin datos de ejecución detallados.</p>";
+        document.getElementById('compactContent').innerHTML = html || "<p>Sin datos de ejecución.</p>";
     }
 
-    function updateLimit(type, val) {
-        currentLimits[type] = parseInt(val);
-        if (cachedData) renderDashboard(cachedData);
-    }
-
-    function toggleCol(cls, show) {
-        document.querySelectorAll('.' + cls).forEach(el => el.style.display = show ? '' : 'none');
-        localStorage.setItem(cls, show);
-    }
-
+    function updateLimit(t, v) { currentLimits[t] = parseInt(v); if (cachedData) renderDashboard(cachedData); }
+    function toggleCol(cls, show) { document.querySelectorAll('.' + cls).forEach(el => el.style.display = show ? '' : 'none'); localStorage.setItem(cls, show); }
+    function refreshExtraPanel() { if (cachedData) renderExtraPanel(cachedData); }
+    
     function applySavedColumnVisibility() {
         ['buy-inm', 'buy-min', 'buy-max', 'sell-inm', 'sell-min', 'sell-max'].forEach(cls => {
             const saved = localStorage.getItem(cls);
@@ -355,8 +341,11 @@
         });
     }
 
-    setInterval(loadData, 30000);
-    window.onload = loadData;
+    setInterval(loadData, 5000);
+    window.onload = () => {
+        initDarkMode();
+        loadData();
+    };
 </script>
 </body>
 </html>
