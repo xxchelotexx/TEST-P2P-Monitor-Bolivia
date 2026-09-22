@@ -4,6 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Monitor P2P Bolivia</title>
+    
+    <!-- Tailwind CSS para la nueva sección de Análisis -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: ['class', '.dark-mode'], // Se vincula al modo oscuro existente
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        binance: { yellow: '#F0B90B', dark: '#0B0E11', card: '#181A20', border: '#2B313A', hover: '#20262D' }
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
         body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 15px; color: #333; background-color: #f4f7f6; padding-bottom: 50px; transition: background-color 0.3s, color 0.3s; }
         .container { max-width: 1200px; margin: 0 auto; }
@@ -12,38 +30,14 @@
         h1 { font-size: 1.5rem; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         select { padding: 5px; font-size: 1.1rem; border-radius: 8px; border: 1px solid #ccc; background: white; cursor: pointer; }
         
-        .header-flex { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 20px;
-        }
-
+        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .info-left { font-size: 0.95rem; line-height: 1.6; }
         .author { font-weight: bold; color: #333; }
         .update-time { color: #666; font-size: 0.9rem; }
 
         /* Tasas FIAT */
-        .fiat-right { 
-            font-family: 'Segoe UI', system-ui, sans-serif; 
-            font-size: 1.1rem; 
-            line-height: 1.6;
-            color: #000;
-            background: #fff;
-            padding: 12px 16px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            margin-top: 35px; 
-            margin-bottom: 15px;
-            width: 100%;
-            box-sizing: border-box;
-            white-space: normal;
-        }
-        .fiat-label { 
-            font-weight: bold; 
-            display: inline-block; 
-            width: 140px; 
-        }
+        .fiat-right { font-family: 'Segoe UI', system-ui, sans-serif; font-size: 1.1rem; line-height: 1.6; color: #000; background: #fff; padding: 12px 16px; border-radius: 8px; border: 1px solid #ddd; margin-top: 35px; margin-bottom: 15px; width: 100%; box-sizing: border-box; white-space: normal; }
+        .fiat-label { font-weight: bold; display: inline-block; width: 140px; }
 
         /* Estilos Tablas y Secciones */
         .section-header { display: flex; justify-content: space-between; align-items: center; margin: 25px 0 10px 0; font-size: 1.1rem; font-weight: bold; }
@@ -53,12 +47,9 @@
         .controls label { background: #fff; border: 1px solid #ddd; padding: 2px 8px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
 
         .table-scroll-container { width: 100%; overflow-x: auto; background: #fff; border-radius: 8px; border: 1px solid #ddd; -webkit-overflow-scrolling: touch; }
-        
-        /* Ajustes para que el fondo abarque todo el ancho disponible sin huecos */
         table { width: 100%; border-collapse: collapse; table-layout: auto; }
         th, td { padding: 10px 12px; border-bottom: 1px solid #eee; font-size: 0.85rem; white-space: nowrap; text-align: right; background: transparent; }
         th { background: #f8f9fa; color: #666; font-weight: 600; }
-        
         .col-precio { text-align: left; font-weight: bold; width: 1%; min-width: 85px; }
         
         #bybitExtraPanel { display: none; margin-top: 30px; border-top: 3px solid #2ebd85; padding-top: 10px; }
@@ -80,6 +71,20 @@
 
         #darkModeBtn { position: absolute; top: 15px; right: 15px; padding: 5px 10px; font-size: 1rem; border-radius: 8px; border: 1px solid #ccc; cursor: pointer; background: #fff; z-index: 1000; }
         .dark-mode #darkModeBtn { background: #333; color: #fff; border-color: #555; }
+
+        /* ESTILOS NUEVOS PARA PESTAÑAS Y ANÁLISIS */
+        .tab-btn { padding: 8px 16px; border-radius: 8px; border: 1px solid #ccc; background: #f0f0f0; cursor: pointer; font-weight: bold; font-size: 0.9rem; transition: all 0.2s; }
+        .tab-btn.active { background: #007bff; color: white; border-color: #007bff; }
+        .dark-mode .tab-btn { background: #252525; border-color: #444; color: #ccc; }
+        .dark-mode .tab-btn.active { background: #F0B90B; color: #0B0E11; border-color: #F0B90B; }
+
+        .circle-bg { fill: none; stroke: #2B313A; stroke-width: 10; }
+        .dark-mode .circle-bg { stroke: #333; }
+        .circle-progress { fill: none; stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 0.8s ease-in-out, stroke 0.5s ease; }
+        .pulse-animation { animation: pulse-glow 2s infinite; }
+        @keyframes pulse-glow { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        .data-update-flash { animation: flash 0.5s ease-out; }
+        @keyframes flash { 0% { background-color: rgba(240, 185, 11, 0.2); } 100% { background-color: transparent; } }
 
         @media (max-width: 768px) {
             .header-flex { flex-direction: column; gap: 10px; }
@@ -115,25 +120,194 @@
         </div>
     </header>
 
-    <div id="mainContent">
-        <div class="loading">Cargando datos...</div>
+    <!-- NAVEGACIÓN DE PESTAÑAS -->
+    <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #ddd; padding-bottom: 10px;">
+        <button id="tabMonitor" class="tab-btn active" onclick="switchTab('monitor')">Monitor P2P</button>
+        <button id="tabAnalisis" class="tab-btn" onclick="switchTab('analisis')">Análisis</button>
     </div>
 
-    <div id="bybitExtraPanel">
-        <div class="section-header">
-            <span>📊 Órdenes Ejecutadas</span>
-            <select id="limitResumen" style="font-size: 0.8rem;" onchange="refreshExtraPanel()">
-                <option value="5">5</option>
-                <option value="10" selected>10</option>
-                <option value="999">Todo</option>
-            </select>
+    <!-- VISTA ORIGINAL: MONITOR -->
+    <div id="view-monitor">
+        <div id="mainContent">
+            <div class="loading">Cargando datos...</div>
         </div>
-        <div id="compactContent"></div>
+
+        <div id="bybitExtraPanel">
+            <div class="section-header">
+                <span>📊 Órdenes Ejecutadas</span>
+                <select id="limitResumen" style="font-size: 0.8rem;" onchange="refreshExtraPanel()">
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="999">Todo</option>
+                </select>
+            </div>
+            <div id="compactContent"></div>
+        </div>
+
+        <div id="bybitOrdersPanel" style="display:none; margin-top:30px; border-top:3px solid #ff9800; padding-top:10px;">
+            <div class="section-header"><span>🛒 Órdenes Activas</span></div>
+            <div id="ordersContent"></div>
+        </div>
     </div>
 
-    <div id="bybitOrdersPanel" style="display:none; margin-top:30px; border-top:3px solid #ff9800; padding-top:10px;">
-        <div class="section-header"><span>🛒 Órdenes Activas</span></div>
-        <div id="ordersContent"></div>
+    <!-- VISTA NUEVA: ANÁLISIS -->
+    <div id="view-analisis" style="display: none;">
+        <div id="fallback-banner" class="hidden bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 text-xs text-amber-300 flex items-center justify-between mb-4">
+            <div class="flex items-center space-x-2">
+                <svg class="w-4 h-4 text-amber-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>No se pudo conectar a la API remota. Mostrando datos del último snapshot.</span>
+            </div>
+            <span class="text-[10px] bg-amber-500/20 px-2 py-0.5 rounded font-mono">Modo Fallback</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+            <!-- Gauge Card -->
+            <div class="lg:col-span-5 bg-binance-card border border-binance-border rounded-2xl p-6 flex flex-col items-center justify-center relative overflow-hidden dark:bg-[#1e1e1e] dark:border-[#333]">
+                <div class="text-center mb-2">
+                    <h2 class="text-sm uppercase tracking-wider text-gray-400 font-semibold dark:text-gray-300">Inmediato Venta / Inmediato Compra</h2>
+                    <p class="text-xs text-gray-500 mt-0.5 dark:text-gray-400">Indicador de Presión P2P (10 Niveles)</p>
+                </div>
+                <div class="relative w-60 h-60 my-2 flex items-center justify-center">
+                    <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                        <circle class="circle-bg" cx="50" cy="50" r="38"></circle>
+                        <circle id="progress-circle" class="circle-progress" cx="50" cy="50" r="38" stroke-dasharray="238.76" stroke-dashoffset="238.76" stroke="#F0B90B"></circle>
+                    </svg>
+                    <div class="absolute flex flex-col items-center text-center px-4">
+                        <span id="ratio-val" class="text-4xl font-black text-white dark:text-gray-100 tracking-tight">0.00</span>
+                        <span id="ratio-status" class="text-xs font-bold px-3 py-1 rounded-full mt-2 bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 transition-all duration-300">Cargando...</span>
+                    </div>
+                </div>
+                <div class="text-[11px] text-gray-400 text-center max-w-xs mt-1 dark:text-gray-400">
+                    Última actualización: <span id="last-update" class="font-mono text-gray-300 dark:text-gray-300">--:--:--</span>
+                </div>
+            </div>
+
+            <!-- Comparative Summary Cards -->
+            <div class="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Card Ventas (SELL) -->
+                <div class="bg-binance-card border border-red-500/20 hover:border-red-500/40 transition rounded-2xl p-5 flex flex-col justify-between dark:bg-[#1e1e1e] dark:border-red-500/20">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-2">
+                                <span class="w-3 h-3 rounded-full bg-red-500 shadow-lg shadow-red-500/50"></span>
+                                <h3 class="text-base font-bold text-red-400">Ventas (SELL)</h3>
+                            </div>
+                            <span class="text-[10px] bg-red-500/10 text-red-400 font-semibold px-2 py-0.5 rounded border border-red-500/20">Top 10 Niveles</span>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="bg-binance-dark/60 p-3 rounded-xl border border-binance-border/50 dark:bg-[#121212] dark:border-[#333]">
+                                <span class="text-xs text-gray-400 block mb-0.5 dark:text-gray-400">Total Inmediato Ventas</span>
+                                <span id="card-inmediato-sell" class="text-xl font-bold text-white font-mono dark:text-gray-100">0.00</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="bg-binance-dark/40 p-2.5 rounded-lg border border-binance-border/30 dark:bg-[#121212] dark:border-[#333]">
+                                    <span class="text-[11px] text-gray-400 block dark:text-gray-400">Total Suma</span>
+                                    <span id="card-suma-sell" class="text-sm font-semibold text-gray-200 font-mono dark:text-gray-200">0.00</span>
+                                </div>
+                                <div class="bg-binance-dark/40 p-2.5 rounded-lg border border-binance-border/30 dark:bg-[#121212] dark:border-[#333]">
+                                    <span class="text-[11px] text-gray-400 block dark:text-gray-400">Anuncios</span>
+                                    <span id="card-conteo-sell" class="text-sm font-semibold text-gray-200 font-mono dark:text-gray-200">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-binance-border/40 text-[11px] text-gray-400 flex justify-between dark:border-[#333] dark:text-gray-400">
+                        <span>Rango precios:</span>
+                        <span id="range-sell" class="font-mono text-gray-300 dark:text-gray-300">-- - --</span>
+                    </div>
+                </div>
+
+                <!-- Card Compras (BUY) -->
+                <div class="bg-binance-card border border-emerald-500/20 hover:border-emerald-500/40 transition rounded-2xl p-5 flex flex-col justify-between dark:bg-[#1e1e1e] dark:border-emerald-500/20">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-2">
+                                <span class="w-3 h-3 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50"></span>
+                                <h3 class="text-base font-bold text-emerald-400">Compras (BUY)</h3>
+                            </div>
+                            <span class="text-[10px] bg-emerald-500/10 text-emerald-400 font-semibold px-2 py-0.5 rounded border border-emerald-500/20">Top 10 Niveles</span>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="bg-binance-dark/60 p-3 rounded-xl border border-binance-border/50 dark:bg-[#121212] dark:border-[#333]">
+                                <span class="text-xs text-gray-400 block mb-0.5 dark:text-gray-400">Total Inmediato Compras</span>
+                                <span id="card-inmediato-buy" class="text-xl font-bold text-white font-mono dark:text-gray-100">0.00</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="bg-binance-dark/40 p-2.5 rounded-lg border border-binance-border/30 dark:bg-[#121212] dark:border-[#333]">
+                                    <span class="text-[11px] text-gray-400 block dark:text-gray-400">Total Suma</span>
+                                    <span id="card-suma-buy" class="text-sm font-semibold text-gray-200 font-mono dark:text-gray-200">0.00</span>
+                                </div>
+                                <div class="bg-binance-dark/40 p-2.5 rounded-lg border border-binance-border/30 dark:bg-[#121212] dark:border-[#333]">
+                                    <span class="text-[11px] text-gray-400 block dark:text-gray-400">Anuncios</span>
+                                    <span id="card-conteo-buy" class="text-sm font-semibold text-gray-200 font-mono dark:text-gray-200">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-binance-border/40 text-[11px] text-gray-400 flex justify-between dark:border-[#333] dark:text-gray-400">
+                        <span>Rango precios:</span>
+                        <span id="range-buy" class="font-mono text-gray-300 dark:text-gray-300">-- - --</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Legend Scale -->
+        <div class="bg-binance-card border border-binance-border rounded-2xl p-4 mt-6 dark:bg-[#1e1e1e] dark:border-[#333]">
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 dark:text-gray-300">Escala de Comportamiento (Ratio Inmediato Venta / Compra)</h3>
+            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 text-center text-xs">
+                <div class="p-2 rounded-xl bg-red-950/40 border border-red-800/40 text-red-300">
+                    <div class="font-bold">0.1 a 1.0</div>
+                    <div class="text-[10px] text-red-400/80">Bajada</div>
+                </div>
+                <div class="p-2 rounded-xl bg-orange-950/40 border border-orange-800/40 text-orange-300">
+                    <div class="font-bold">1.0 a 1.5</div>
+                    <div class="text-[10px] text-orange-400/80">En proceso de bajada</div>
+                </div>
+                <div class="p-2 rounded-xl bg-amber-950/40 border border-amber-800/40 text-amber-300">
+                    <div class="font-bold">1.5 a 2.0</div>
+                    <div class="text-[10px] text-amber-400/80">Posible Bajada</div>
+                </div>
+                <div class="p-2 rounded-xl bg-yellow-950/40 border border-yellow-800/40 text-yellow-300">
+                    <div class="font-bold">2.0 a 4.0</div>
+                    <div class="text-[10px] text-yellow-400/80">Normal</div>
+                </div>
+                <div class="p-2 rounded-xl bg-lime-950/40 border border-lime-800/40 text-lime-300">
+                    <div class="font-bold">4.0 a 6.0</div>
+                    <div class="text-[10px] text-lime-400/80">Posible Subida</div>
+                </div>
+                <div class="p-2 rounded-xl bg-emerald-950/40 border border-emerald-800/40 text-emerald-300">
+                    <div class="font-bold">6.0 a 9.0</div>
+                    <div class="text-[10px] text-emerald-400/80">En proceso de subida</div>
+                </div>
+                <div class="p-2 rounded-xl bg-green-950/60 border border-green-600/50 text-green-200 col-span-2 sm:col-span-2 lg:col-span-1">
+                    <div class="font-bold">10+</div>
+                    <div class="text-[10px] text-green-300/80">Subida</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Analysis Controls -->
+        <div class="flex items-center space-x-4 bg-binance-dark/80 dark:bg-[#121212] px-4 py-2 rounded-xl border border-binance-border dark:border-[#333] mt-4 w-fit">
+            <div class="flex items-center space-x-2">
+                <span id="status-indicator" class="w-2.5 h-2.5 rounded-full bg-emerald-500 pulse-animation"></span>
+                <span id="status-text" class="text-xs font-medium text-gray-300 dark:text-gray-300">Conectado</span>
+            </div>
+            <div class="h-4 w-px bg-binance-border dark:bg-[#333]"></div>
+            <div class="text-xs font-mono text-yellow-400 flex items-center gap-1">
+                <svg class="w-3.5 h-3.5 animate-spin hidden" id="refresh-spinner" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span>Refresco en: <strong id="countdown" class="text-white dark:text-gray-100">10</strong>s</span>
+            </div>
+            <button onclick="fetchAnalysisData()" title="Refrescar manualmente" class="p-1.5 hover:bg-binance-hover dark:hover:bg-[#252525] rounded-lg text-gray-400 hover:text-white transition">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+            </button>
+        </div>
     </div>
 
     <footer>
@@ -266,10 +440,7 @@
             const volInmT = display.reduce((acc, curr) => acc + (curr.inmediato || 0), 0);
             const adsT = display.reduce((acc, curr) => acc + (curr.conteo || 0), 0);
 
-            // Obtener el valor máximo para escalar la barra al 100% del campo
             const maxVol = Math.max(...display.map(e => e.suma), 1);
-
-            // Tono del sombreado de profundidad
             const bgRgb = type === "BUY" 
                 ? (isDark ? "46, 189, 133, 0.35" : "46, 189, 133, 0.2") 
                 : (isDark ? "246, 70, 93, 0.35" : "246, 70, 93, 0.2");
@@ -339,6 +510,157 @@
                 toggleCol(cls, isVisible);
             }
         });
+    }
+
+    // ==========================================
+    // LÓGICA NUEVA: PESTAÑAS Y ANÁLISIS
+    // ==========================================
+    
+    function switchTab(view) {
+        const monitorView = document.getElementById('view-monitor');
+        const analisisView = document.getElementById('view-analisis');
+        const tabMonitor = document.getElementById('tabMonitor');
+        const tabAnalisis = document.getElementById('tabAnalisis');
+
+        if (view === 'monitor') {
+            monitorView.style.display = 'block';
+            analisisView.style.display = 'none';
+            tabMonitor.classList.add('active');
+            tabAnalisis.classList.remove('active');
+        } else {
+            monitorView.style.display = 'none';
+            analisisView.style.display = 'block';
+            tabMonitor.classList.remove('active');
+            tabAnalisis.classList.add('active');
+            if (!window.analysisLoaded) {
+                fetchAnalysisData();
+                window.analysisLoaded = true;
+            }
+        }
+    }
+
+    const FALLBACK_DATA = {"timestamp":1790107345.948,"resultados":[{"trade_type":"BUY","vol_total":369717.23,"datos_agrupados":{"12.32":{"suma":291.14,"conteo":1,"min":55.0,"max":3586.8448,"inmediato":291.14},"12.33":{"suma":116.61999999999999,"conteo":2,"min":150.0,"max":1242.1242,"inmediato":116.62},"12.34":{"suma":333.21000000000004,"conteo":3,"min":100.0,"max":2461.83,"inmediato":312.63100486223664},"12.35":{"suma":8930.57,"conteo":16,"min":55.0,"max":36571.684499999996,"inmediato":7136.043319838056},"12.36":{"suma":12588.52,"conteo":10,"min":100.0,"max":74066.682,"inmediato":12304.976148867316},"12.37":{"suma":4844.0599999999995,"conteo":4,"min":100.0,"max":41527.5744,"inmediato":4844.0599999999995},"12.38":{"suma":83906.33,"conteo":10,"min":55.0,"max":207585.0,"inmediato":58911.571243941835},"12.39":{"suma":11449.49,"conteo":5,"min":300.0,"max":75289.6935,"inmediato":11067.195004035511},"12.40":{"suma":35297.1,"conteo":11,"min":35.0,"max":207500.0,"inmediato":31417.581290322578},"12.42":{"suma":280.89,"conteo":1,"min":35.0,"max":3488.6537999999996,"inmediato":280.89}}},{"trade_type":"SELL","vol_total":4480721.369999998,"datos_agrupados":{"12.32":{"suma":54663.58,"conteo":1,"min":40000.0,"max":207585.0,"inmediato":16849.431818181816},"12.31":{"suma":137196.69,"conteo":5,"min":4000.0,"max":207585.0,"inmediato":83083.26563769294},"12.30":{"suma":331648.87,"conteo":16,"min":55.0,"max":207585.0,"inmediato":110424.91512195121},"12.29":{"suma":343230.28,"conteo":11,"min":1000.0,"max":207585.0,"inmediato":130818.97306753458},"12.28":{"suma":210509.13000000003,"conteo":13,"min":60.0,"max":207585.0,"inmediato":60240.14315960911},"12.27":{"suma":355904.58,"conteo":12,"min":55.0,"max":207585.0,"inmediato":89687.74265688671},"12.26":{"suma":388336.57000000007,"conteo":13,"min":35.0,"max":207585.0,"inmediato":85303.15988580752},"12.25":{"suma":200797.59,"conteo":9,"min":100.0,"max":207585.0,"inmediato":74727.09775510203},"12.24":{"suma":172453.38999999998,"conteo":5,"min":35.0,"max":207585.0,"inmediato":27909.310392156865},"12.23":{"suma":91420.77,"conteo":3,"min":201.0,"max":207000.0,"inmediato":28346.362804578905}}}]};
+    const ANALYSIS_API_URL = "https://apicollector-production.up.railway.app/p2p/binance";
+    let countdownValue = 10;
+    let countdownTimer = null;
+
+    const formatNum = (num, decimals = 2) => {
+        return new Intl.NumberFormat('es-ES', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(num);
+    };
+
+    function evaluateRatio(ratio) {
+        if (ratio < 1.0) return { status: "Bajada", color: "#ef4444", bgClass: "bg-red-500/10 text-red-400 border-red-500/30", percent: Math.min(Math.max((ratio / 1.0) * 15, 5), 15) };
+        if (ratio < 1.5) return { status: "En proceso de bajada", color: "#f97316", bgClass: "bg-orange-500/10 text-orange-400 border-orange-500/30", percent: 15 + ((ratio - 1.0) / 0.5) * 15 };
+        if (ratio < 2.0) return { status: "Posible Bajada", color: "#f59e0b", bgClass: "bg-amber-500/10 text-amber-400 border-amber-500/30", percent: 30 + ((ratio - 1.5) / 0.5) * 12.5 };
+        if (ratio < 4.0) return { status: "Normal", color: "#eab308", bgClass: "bg-yellow-500/10 text-yellow-400 border-yellow-500/30", percent: 42.5 + ((ratio - 2.0) / 2.0) * 15 };
+        if (ratio < 6.0) return { status: "Posible Subida", color: "#84cc16", bgClass: "bg-lime-500/10 text-lime-400 border-lime-500/30", percent: 57.5 + ((ratio - 4.0) / 2.0) * 17.5 };
+        if (ratio < 9.0) return { status: "En proceso de subida", color: "#10b981", bgClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30", percent: 75 + ((ratio - 6.0) / 3.0) * 15 };
+        return { status: "Subida", color: "#22c55e", bgClass: "bg-green-500/10 text-green-400 border-green-500/30", percent: Math.min(90 + ((ratio - 9.0) / 5) * 10, 100) };
+    }
+
+    function processLevels(datosAgrupados) {
+        if (!datosAgrupados) return { items: [], totalSuma: 0, totalInmediato: 0, totalConteo: 0 };
+        const keys = Object.keys(datosAgrupados).slice(0, 10);
+        let totalSuma = 0, totalInmediato = 0, totalConteo = 0;
+        const items = keys.map(precio => {
+            const info = datosAgrupados[precio];
+            const suma = Number(info.suma || 0);
+            const inmediato = Number(info.inmediato || 0);
+            const conteo = Number(info.conteo || 0);
+            totalSuma += suma; totalInmediato += inmediato; totalConteo += conteo;
+            return { precio: Number(precio), suma, inmediato, conteo };
+        });
+        return { items, totalSuma, totalInmediato, totalConteo };
+    }
+
+    function updateAnalysisUI(data, isFallback = false) {
+        const banner = document.getElementById('fallback-banner');
+        if (isFallback) banner.classList.remove('hidden');
+        else banner.classList.add('hidden');
+
+        let buyData = null, sellData = null;
+        if (data && data.resultados) {
+            data.resultados.forEach(res => {
+                if (res.trade_type === "BUY") buyData = res.datos_agrupados;
+                if (res.trade_type === "SELL") sellData = res.datos_agrupados;
+            });
+        }
+
+        const buyProcessed = processLevels(buyData);
+        const sellProcessed = processLevels(sellData);
+        const ratio = buyProcessed.totalInmediato > 0 ? (sellProcessed.totalInmediato / buyProcessed.totalInmediato) : 0;
+
+        const evalResult = evaluateRatio(ratio);
+        document.getElementById('ratio-val').innerText = ratio.toFixed(2);
+        
+        const statusElem = document.getElementById('ratio-status');
+        statusElem.innerText = evalResult.status;
+        statusElem.className = `text-xs font-bold px-3 py-1 rounded-full mt-2 transition-all duration-300 border ${evalResult.bgClass}`;
+
+        const circle = document.getElementById('progress-circle');
+        const circumference = 2 * Math.PI * 38;
+        const offset = circumference - (evalResult.percent / 100) * circumference;
+        circle.style.strokeDashoffset = offset;
+        circle.style.stroke = evalResult.color;
+
+        document.getElementById('card-inmediato-sell').innerText = formatNum(sellProcessed.totalInmediato);
+        document.getElementById('card-suma-sell').innerText = formatNum(sellProcessed.totalSuma);
+        document.getElementById('card-conteo-sell').innerText = sellProcessed.totalConteo;
+        if (sellProcessed.items.length > 0) {
+            document.getElementById('range-sell').innerText = `${sellProcessed.items[0].precio} - ${sellProcessed.items[sellProcessed.items.length - 1].precio}`;
+        }
+
+        document.getElementById('card-inmediato-buy').innerText = formatNum(buyProcessed.totalInmediato);
+        document.getElementById('card-suma-buy').innerText = formatNum(buyProcessed.totalSuma);
+        document.getElementById('card-conteo-buy').innerText = buyProcessed.totalConteo;
+        if (buyProcessed.items.length > 0) {
+            document.getElementById('range-buy').innerText = `${buyProcessed.items[0].precio} - ${buyProcessed.items[buyProcessed.items.length - 1].precio}`;
+        }
+
+        const now = new Date();
+        document.getElementById('last-update').innerText = now.toLocaleTimeString();
+    }
+
+    async function fetchAnalysisData() {
+        const spinner = document.getElementById('refresh-spinner');
+        const statusIndicator = document.getElementById('status-indicator');
+        const statusText = document.getElementById('status-text');
+
+        spinner.classList.remove('hidden');
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 6000);
+            const response = await fetch(ANALYSIS_API_URL, { signal: controller.signal });
+            clearTimeout(timeoutId);
+            if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+            const data = await response.json();
+            updateAnalysisUI(data, false);
+            statusIndicator.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 pulse-animation";
+            statusText.innerText = "Conectado";
+        } catch (err) {
+            console.warn("Fallo al consumir API directa, usando fallback:", err.message);
+            updateAnalysisUI(FALLBACK_DATA, true);
+            statusIndicator.className = "w-2.5 h-2.5 rounded-full bg-amber-500";
+            statusText.innerText = "Modo Fallback";
+        } finally {
+            spinner.classList.add('hidden');
+            resetCountdown();
+        }
+    }
+
+    function resetCountdown() {
+        countdownValue = 10;
+        document.getElementById('countdown').innerText = countdownValue;
+        if (countdownTimer) clearInterval(countdownTimer);
+        countdownTimer = setInterval(() => {
+            countdownValue--;
+            if (countdownValue <= 0) {
+                clearInterval(countdownTimer);
+                fetchAnalysisData();
+            } else {
+                document.getElementById('countdown').innerText = countdownValue;
+            }
+        }, 1000);
     }
 
     setInterval(loadData, 5000);
